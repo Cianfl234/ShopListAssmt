@@ -62,11 +62,13 @@ class PlanCategoriesFragment : Fragment() {
 
         adapter = ItemAdapter(
             onAction = { item, action ->
-                val index = adapter.currentList.indexOf(item) - 1
-                when (action) {
-                    ItemAdapter.Action.EDIT -> showEditDialog(index, item.name)
-                    ItemAdapter.Action.DELETE -> viewModel.deleteCategory(index)
-                    else -> {}
+                val index = viewModel.categories.value.orEmpty().indexOfFirst { it.id == item.id }
+                if (index >= 0) {
+                    when (action) {
+                        ItemAdapter.Action.EDIT -> showEditDialog(index, item.name)
+                        ItemAdapter.Action.DELETE -> viewModel.deleteCategory(index)
+                        else -> {}
+                    }
                 }
             },
             mode = ItemAdapter.Mode.PLAN,
@@ -81,13 +83,15 @@ class PlanCategoriesFragment : Fragment() {
         val gestureDetector = GestureDetectorCompat(requireContext(), object : GestureDetector.SimpleOnGestureListener() {
             override fun onDoubleTap(e: MotionEvent): Boolean {
                 val child = binding.recyclerView.findChildViewUnder(e.x, e.y)
-                val position = child?.let { binding.recyclerView.getChildAdapterPosition(it) } ?: RecyclerView.NO_POSITION
-                if (position != RecyclerView.NO_POSITION) {
-                    val item = adapter.currentList.getOrNull(position)
-                    if (item?.isHeading == true) {
-                        val index = position - 1
-                        val viewPager = requireActivity().findViewById<ViewPager2>(R.id.viewPager)
-                        viewPager.currentItem = index + 1
+                val position = child?.let { binding.recyclerView.getChildAdapterPosition(it) }
+                    ?: RecyclerView.NO_POSITION
+                val item = adapter.currentList.getOrNull(position)
+                if (item != null && item.isHeading) {
+                    val page = CategoryPages.pageForCategoryId(
+                        viewModel.categories.value.orEmpty(), item.id, planMode = true
+                    )
+                    if (page != null) {
+                        requireActivity().findViewById<ViewPager2>(R.id.viewPager).currentItem = page
                         return true
                     }
                 }

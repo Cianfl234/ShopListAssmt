@@ -1,10 +1,6 @@
 package com.mmgpt.shoplistgpt
 
 object CategoryPages {
-
-    fun pageForRowPosition(rowPosition: Int, planMode: Boolean): Int =
-        if (planMode) (rowPosition - 1) + 1 else rowPosition
-
     fun pageForCategoryId(
         categories: List<ShoppingCategory>,
         categoryId: Long,

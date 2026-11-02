@@ -11,13 +11,18 @@ class CategoryPagesTest {
     private val vm = cats("A", "B", "C", "D")
 
     @Test
-    fun plan_noDrift_rowPositionGivesCorrectPage() {
-        assertEquals(3, CategoryPages.pageForRowPosition(3, planMode = true))
+    fun plan_lookupByIdOpensCorrectPage_regardlessOfScreenOrder() {
+        assertEquals(3, CategoryPages.pageForCategoryId(vm, 2L, planMode = true))
     }
 
     @Test
-    fun plan_afterDrift_tappingCCategoryOpensCPage() {
-        // Screen drifted to [A, C, B, D]: C sits at row 2 but should open page 3.
-        assertEquals(3, CategoryPages.pageForRowPosition(2, planMode = true))
+    fun plan_afterReorderInViewModel_pageFollowsNewOrder() {
+        val reordered = listOf(vm[2], vm[0], vm[1], vm[3])   // C, A, B, D
+        assertEquals(1, CategoryPages.pageForCategoryId(reordered, 2L, planMode = true))
+    }
+
+    @Test
+    fun deletedCategory_returnsNull() {
+        assertEquals(null, CategoryPages.pageForCategoryId(vm, 99L, planMode = true))
     }
 }
